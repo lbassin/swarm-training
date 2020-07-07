@@ -1,0 +1,15 @@
+version: 3.6
+services:
+  nginx:
+    image: nginx
+    deploy:
+      replicas: 2
+    volumes:
+      - logs:/var/log/nginx
+
+networks:
+  web:
+    driver: overlay
+
+volumes:
+  logs: ~
