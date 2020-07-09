@@ -1,15 +1,54 @@
-version: 3.6
+version: '3.7'
 services:
   nginx:
-    image: nginx
+    image: lbassin/nginx:latest
     deploy:
+      labels:
+        type: nginx
       replicas: 2
+      update_config:
+        parallelism: 1
+        order: start-first
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+      resources:
+        limits:
+          cpus: '1'
+          memory: 128M
     volumes:
-      - logs:/var/log/nginx
+      - type: volume
+        source: logs
+        target: /var/log/nginx
+    ports:
+      - protocol: tcp
+        target: 80
+        published: 80
+
+  filebeat:
+    image: lbassin/filebeat:latest
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '1'
+          memory: 128M
+    volumes:
+      - type: volume
+        source: logs
+        target: /var/log/nginx
+    env_file:
+      - .filebeat-env
+    secrets:
+      - TEST
 
 networks:
-  web:
+  api:
     driver: overlay
 
 volumes:
   logs: ~
+
+secrets:
+  TEST:
+    external: true
